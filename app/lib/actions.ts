@@ -2,6 +2,8 @@
 
 import { z } from 'zod';
 import { sql } from '@vercel/postgres';
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 const FormSchema = z.object({
   id: z.string(),
@@ -25,5 +27,10 @@ export async function createInvoice(formData: FormData) {
   await sql`
   INSERT INTO invoices (customer_id, amount, status, date)
   VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
-`;
+  `;
+  // Next.jsには、ルートセグメントをユーザーのブラウザに一時的に保存するクライアントサイドルーターキャッシュがあります。
+  // プリフェッチとともに、このキャッシュは、サーバーへのリクエスト数を減らしながら、ユーザーがルート間をすばやく移動できるようにします。
+  // 請求書ルートに表示されるデータを更新するので、このキャッシュをクリアして、サーバーへの新しいリクエストをトリガーする
+  revalidatePath('/dashboard/invoices');
+  redirect('/dashboard/invoices');
 }
