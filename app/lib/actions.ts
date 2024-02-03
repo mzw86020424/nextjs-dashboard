@@ -37,6 +37,7 @@ export async function createInvoice(formData: FormData) {
 }
 
 export async function updateInvoice(id: string, formData: FormData) {
+  // zodでバリデーションを実行している
   const { customerId, amount, status } = UpdateInvoice.parse({
     customerId: formData.get('customerId'),
     amount: formData.get('amount'),
@@ -51,6 +52,8 @@ export async function updateInvoice(id: string, formData: FormData) {
     WHERE id = ${id}
   `;
  
+  // キャッシュでなく再取得
   revalidatePath('/dashboard/invoices');
+  // その後移動
   redirect('/dashboard/invoices');
 }
